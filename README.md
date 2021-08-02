@@ -18,10 +18,9 @@ Although the designer sets the reward policy–that is, the rules of the game–
 
 ## Task Goals and Details
 
-The environment is a **Unity Machine Learning Agents (ML-Agents)**, which is an open-source Unity plugin that enables games and simulations to serve as environments for training intelligent agents.
+The environment is a **Unity Machine Learning Agents (ML-Agents)**, which is an open-source Unity plugin that enables games and simulations to serve as environments for training intelligent agents. The observation space consists of 33 variables corresponding to position, rotation, velocity, and angular velocities of the arm. Each action is a vector with four numbers, corresponding to torque applicable to two joints. Every entry in the action vector should be a number between -1 and 1.
 
-
-**How to complete the task**:
+**How to complete the task**: A reward of +0.1 is provided for each step that the agent's hand is in the goal location. So in order to solve the environment, the agent must get an average score of +30 over 100 consecutive episodes. If the selected environment is the second, then the new score to be reached is now the average score of the 20 environment agents per time step.
 
 ## Environment Set Up
 
