@@ -1,5 +1,10 @@
 # udacity_DRL_continuous_control
-Codes for the project Continuous Control submission.
+This repository contains the codes for the project Continuous Control submission.They are
+
+- checkpoints for actor and critic in the multiple agents version (`checkpoint_critic_second_env.pth` and `checkpoint_actor_second_env.pth`)
+- added ddpg model (`ddpg_model_second_env.py`) and neural network architecture (`model_second_env.py`)
+- added tracked training results (time spend training, scores evolution)  (`second_env_model_results.sav`)
+- added the jupyter notebook used to train the agent (`Reacher.ipynb`)
 
 ## About the Project
 
