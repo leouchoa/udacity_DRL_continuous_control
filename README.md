@@ -67,5 +67,5 @@ After your environment is set up, to run the code and train the agent:
 - Open up the `Reacher.ipynb` jupyter notebook.
 - Run all the cells (note that the the gpu usage is enable if you have one configured)
 
-Note that in the repository there are two other files, named `ddpg_agent_second_env.py` and  `model_second_env.py`. Those files are heavily inspired in the code provided by the udacity course and adapted to match the banana environment specification needs (namely, action and state spaces).
+Note that in the repository there are two other files, named `ddpg_agent_second_env.py` and  `model_second_env.py`. Those files are heavily inspired in the code provided by the udacity course (pendulum solution) and adapted to match the reacher environment specification needs (namely, action and state spaces).
 
