@@ -59,3 +59,13 @@ Then, place the file in the `p2_continuous-control/` folder in the DRLND GitHub 
 (For AWS) If you'd like to train the agent on AWS (and have not [enabled a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md)), then please use [this link](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/one_agent/Reacher_Linux_NoVis.zip) (version 1) or [this link](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/Reacher_Linux_NoVis.zip) (version 2) to obtain the "headless" version of the environment. You will not be able to watch the agent without enabling a virtual screen, but you will be able to train the agent. (*To watch the agent, you should follow the instructions to [enabled a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md), and then download the environment for the Linux operating system above.*)
 
 If you are interested in learning to build your own Unity environments after completing the project, you are encouraged to follow the instructions [here](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Getting-Started-with-Balance-Ball.md), which walk you through all of the details of building an environment from a Unity scene. 
+
+## Instructions to Run the Code
+
+After your environment is set up, to run the code and train the agent:
+
+- Open up the `Reacher.ipynb` jupyter notebook.
+- Run all the cells (note that the the gpu usage is enable if you have one configured)
+
+Note that in the repository there are two other files, named `ddpg_agent_second_env.py` and  `model_second_env.py`. Those files are heavily inspired in the code provided by the udacity course and adapted to match the banana environment specification needs (namely, action and state spaces).
+
