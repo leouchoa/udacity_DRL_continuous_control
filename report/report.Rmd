@@ -69,9 +69,9 @@ Besides that, `DDPG` is very much like what was described in steps 1-4. So in th
 
 # Coding the Algorithm
 
-The code implementation of the algorithm used here is mostly inspired the by "Pendulum" project notebook provided by `Udacity`, in the "Policy-Based" section. Here is a brief description of the files:
+The code implementation of the algorithm used here is mostly inspired the by "[Pendulum](https://github.com/udacity/deep-reinforcement-learning/tree/master/ddpg-pendulum)" project notebook provided by `Udacity`, in the "Actor-Critic Methods" section. Here is a brief description of the files:
 
-- **Reacher.ipynb**: a jupyter notebook that serves as a wrapper of smaller functions. This is the main file, responsible for: 1) starting the environment; 2) loading the neural network architecture in `model_py`; 3) loading the `dqn_agent` implementation with fixed q-targets and experience replay.
+- **Reacher.ipynb**: a jupyter notebook that serves as a wrapper of smaller functions. This is the main file, responsible for: 1) starting the environment; 2) loading the neural network architecture in `model_second_env.py`; 3) loading the `ddpg_agent` implementation, running it and saving model weights and score results.
 
 - **model_second_env.py**: this is where the neural network architectures are stored, written in `pytorch`.
 
@@ -80,6 +80,8 @@ The code implementation of the algorithm used here is mostly inspired the by "Pe
 - **checkpoint_actor_second_env.pth**: this is the `DDPG` actor model weights used to solve the environment.
 
 - **checkpoint_critic_second_env.pth**: this is the `DDPG` critic model weights used to solve the environment.
+
+- **second_env_model_results.sav**: this a pickled object that contains the scores, average scores and time spent training.
 
 ## Comments on `model_second_env.py`
 
@@ -133,7 +135,7 @@ The `ddpg_agent_second_env.py` file contains:
     
 - the `OUNoise` class:
     - implements the Ornstein-Uhlenbeck process in order to help exploration
-    - hyperparameters used are the default already present in the pendulum. Namely:
+    - hyperparameters used are the default already present in the udacity pendulum implementation. Namely:
       - `mu = 0`
       - `theta = 0.15`
       - `sigma = 0.2`

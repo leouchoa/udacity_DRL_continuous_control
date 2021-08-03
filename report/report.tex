@@ -225,16 +225,18 @@ action spaces. The \texttt{DDPG} is depicted in Figure 02.
 \section{Coding the Algorithm}\label{coding-the-algorithm}}
 
 The code implementation of the algorithm used here is mostly inspired
-the by ``Pendulum'' project notebook provided by \texttt{Udacity}, in
-the ``Policy-Based'' section. Here is a brief description of the files:
+the by
+``\href{https://github.com/udacity/deep-reinforcement-learning/tree/master/ddpg-pendulum}{Pendulum}''
+project notebook provided by \texttt{Udacity}, in the ``Actor-Critic
+Methods'' section. Here is a brief description of the files:
 
 \begin{itemize}
 \item
   \textbf{Reacher.ipynb}: a jupyter notebook that serves as a wrapper of
   smaller functions. This is the main file, responsible for: 1) starting
   the environment; 2) loading the neural network architecture in
-  \texttt{model\_py}; 3) loading the \texttt{dqn\_agent} implementation
-  with fixed q-targets and experience replay.
+  \texttt{model\_second\_env.py}; 3) loading the \texttt{ddpg\_agent}
+  implementation, running it and saving model weights and score results.
 \item
   \textbf{model\_second\_env.py}: this is where the neural network
   architectures are stored, written in \texttt{pytorch}.
@@ -248,6 +250,9 @@ the ``Policy-Based'' section. Here is a brief description of the files:
 \item
   \textbf{checkpoint\_critic\_second\_env.pth}: this is the
   \texttt{DDPG} critic model weights used to solve the environment.
+\item
+  \textbf{second\_env\_model\_results.sav}: this a pickled object that
+  contains the scores, average scores and time spent training.
 \end{itemize}
 
 \hypertarget{comments-on-model_second_env.py}{%
@@ -354,8 +359,8 @@ The \texttt{ddpg\_agent\_second\_env.py} file contains:
     implements the Ornstein-Uhlenbeck process in order to help
     exploration
   \item
-    hyperparameters used are the default already present in the
-    pendulum. Namely:
+    hyperparameters used are the default already present in the udacity
+    pendulum implementation. Namely:
 
     \begin{itemize}
     \tightlist
