@@ -170,10 +170,48 @@ efficiently than the usual stochastic policy gradient.
 
 The \texttt{DDPG} algorithm then is a mix of both \texttt{DPG} and
 \texttt{DQN}, where we have two networks: the actor and critic. The
-actor \ldots{} and the critic \ldots. So for the actor we have two
-neural networks (a target and a policy network, like in the
-\texttt{DQN}) and for the critic we also have two neural networks (a
-target and a policy network, also like in the \texttt{DQN}).
+actor is responsible for estimating the value (or action-value) function
+while the critic is responsible for evaluating the value function. So
+the intuition behind actor-critic methods goes like this:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  the actor takes in the current state and takes an action, based on the
+  current policy \(\pi(a|s;\theta_{\pi})\).
+\item
+  collect the experience tuple \((s,a,r,s')\) to feed the critic, whose
+  job is to estimate \(V(s;\theta_{v})\).
+\item
+  use the critic output to calculate the advantage function
+  \(A(s,a)=r + \gamma V(s';\theta_{v}) - V(s;\theta_{v})\) and use it as
+  the new baseline for actor to move on.
+\item
+  Repeat steps 1 through 3 until a stopping rule is achieved (end
+  learning).
+\end{enumerate}
+
+But the \texttt{DDPG} algorithm is a bit different from classic
+actor-critic methods. The actor in \texttt{DDPG} is used to approximate
+\(\max _{a}Q(s_{t+1},a)\), an expression found the original \texttt{DQN}
+implementation and not as a learn baseline. So instead of outputting
+\(\pi(a|s;\theta_{\pi})\), the actor outputs \(\mu(s;\theta_{\mu})\), an
+approximation of \(\max _{a}Q(s_{t+1},a)\) (notice that this is follows
+an deterministic policy, not a stochastic policy). Then the critic takes
+the actor output and learns to evaluate it, by estimating
+\(Q(s,\mu(s;\theta_{\mu});\theta_{Q})\).
+
+Besides that, \texttt{DDPG} is very much like what was described in
+steps 1-4. So in the \texttt{DDPG} algorithm implementation of steps 1
+through 4 the actor will have two neural networks (a target and a policy
+network, like in the \texttt{DQN}) and for the critic we also have two
+neural networks (a target and a policy network, also like in the
+\texttt{DQN}). Also present in the \texttt{DDPG} algorithm is the replay
+buffer, in order improve learning by collecting some chunks of episodes.
+Also present are the fixed q targets used to help stabilize learning, as
+described in the \texttt{DQN} implementation. \texttt{DDPG} pretty much
+resembles the \texttt{DQN} algorithm, but addapted to support continuous
+action spaces. The \texttt{DDPG} is depicted in Figure 02.
 
 \begin{figure}
 \centering
