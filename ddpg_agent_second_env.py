@@ -148,8 +148,8 @@ class OUNoise:
         x = self.state
 
         # Thanks to Nisheed for this tip, this really helped get the learning up to the desired levels
-        # dx = self.theta * (self.mu - x) + self.sigma * np.array([random.random() for i in range(len(x))])
-        dx = self.theta * (self.mu - x) + self.sigma * np.random.standard_normal(self.size)
+        # dx = self.theta * (self.mu - x) + self.sigma * np.random.standard_normal(self.size)
+        dx = self.theta * (self.mu - x) + self.sigma * np.array([random.random() for i in range(len(x))])
 
         self.state = x + dx
         return self.state
