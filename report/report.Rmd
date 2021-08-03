@@ -67,46 +67,77 @@ Besides that, `DDPG` is very much like what was described in steps 1-4. So in th
 
 
 
-# Coding the Algorithm [NEED TO UPDATE]
+# Coding the Algorithm
 
 The code implementation of the algorithm used here is mostly inspired the by "Pendulum" project notebook provided by `Udacity`, in the "Policy-Based" section. Here is a brief description of the files:
 
 - **Reacher.ipynb**: a jupyter notebook that serves as a wrapper of smaller functions. This is the main file, responsible for: 1) starting the environment; 2) loading the neural network architecture in `model_py`; 3) loading the `dqn_agent` implementation with fixed q-targets and experience replay.
 
-- **model.py**: this is where the neural network architecture is stored, written in `pytorch`.
+- **model_second_env.py**: this is where the neural network architectures are stored, written in `pytorch`.
 
-- **dqn_agent.py**: this is code that implements the `DQN` high-level ideas of fixed q-targets and experience replay. 
+- **ddpg_agent_second_env.py**: this is code that implements the `DDPG` high-level ideas of fixed q-targets, experience replay and Ornstein-Uhlenbeck noise. 
 
-- **checkpoint.pth**: this is the `DQN` model weights used to solve the environment **with** early stopping (which means that if achieve the average score of +13 over 100 episodes than we finish learning).
+- **checkpoint_actor_second_env.pth**: this is the `DDPG` actor model weights used to solve the environment.
 
-- **checkpoint_no_callback.pth**: this is the `DQN` model weights used to solve the environment **without** early stopping (which means that even if achieve the average score of +13 over 100 episodes, we still continue learning until we hit the total number of episodes specified).
+- **checkpoint_critic_second_env.pth**: this is the `DDPG` critic model weights used to solve the environment.
 
-## Comments on `model.py`
+## Comments on `model_second_env.py`
 
-The `model.py` file contains the `pytorch` model architecture used to solve the environment. The architecture used is a simple 2 fully connected layer with RELU activation function. The input size that the network expects is the 37 dimension array corresponding to the state space size, while the output layer is a simple linear layer with output size of 4 which corresponds to the 4 actions available (forward,backward,left,right). 
+The `model_second_env.py` file contains the `pytorch` model architecture used to solve the environment. The input size that the network expects is the 33 variables corresponding to position, rotation, velocity, and angular velocities of the arm, while the output layer is a simple linear layer with output size of 4 corresponding to torque applicable to two joints.
+
+The **Actor Neural Networks** use the following architecture.
+
+```
+Input nodes (33) 
+  -> Fully Connected Layer (128 nodes, Relu activation) 
+    -> Batch Normlization
+      -> Fully Connected Layer (128 nodes, Relu activation) 
+         -> Ouput nodes (4 nodes, tanh activation)
+```
+
+
+The **Critic Neural Networks** use the following architecture :
+
+```
+Input nodes (33) 
+  -> Fully Connected Layer (128 nodes, Relu activation) 
+    -> Batch Normlization
+      -> Include Actions at the second fully connected layer
+        -> Fully Connected Layer (128+4 nodes, Relu activation) 
+          -> Ouput node (1 node, no activation)
+```
 
 The `hyperparameters` used are:
 
-- the number of units in both first and second fully connected layer are 64.
-- the learning rate parameter used in the `adam` optimizer is `LR = 5e-4` (this actually belongs to the `model.py` file, but it's also part of the neural network architecture)
+- the number of units in both first and second fully connected layer are 128.
+- the learning rate parameter used in the `adam` optimizer for both actor and critic are `LR_ACTOR = LR_CRITIC = 1e-4` (this actually belongs to the `ddpg_agent_second_env.py` file, but it's also part of the neural network architecture)
 
-## Comments on `dqn_agent.py`
+## Comments on `ddpg_agent_second_env.py`
 
-The `model.py` file contains:
+The `ddpg_agent_second_env.py` file contains:
 
 - the `hyperparameters` used: 
-    - `BATCH_SIZE = 64`: neural network mini-batch size
+    - `BATCH_SIZE = 128`: neural network mini-batch size
     - `GAMMA = 0.99`: the discount factor used in the discounted sum of rewards
     - `TAU = 1e-3`: the $\tau$ parameter used to soft update of target parameters
-    - `LR = 5e-4`: the neural network learning rate use in gradient descent
-    - `UPDATE_EVERY = 4`: how often to update the network
-    - `BUFFER_SIZE = 1e5`: replay buffer size (how much we store into the replay buffer)
+    - `LR_ACTOR = 1e-4`: the actor neural network learning rate use in gradient descent
+    - `LR_CRITIC = 1e-4`: the critic neural network learning rate use in gradient descent
+    - `WEIGHT_DECAY = 0.0`: L2 weight decay
+    - `BUFFER_SIZE = 1e6`: replay buffer size (how much we store into the replay buffer)
     
     
 - the `Agent` class: 
-    - implements the `step`, `act`, `learn` and `soft_updates` methods
-    - initializes the policy and target networks for fixed q-target strategy
+    - implements the `step`, `act`, `learn` and `soft_updates` methods. Also has the `start_learn` to implement the idea to learn just after some episodes in order to help stabilize training (as suggested in the benchmark section)
+    - initializes the policy and target networks for fixed q-target strategy for both actor and critic networks.
     - initializes the `ReplayBuffer` class.
+    
+- the `OUNoise` class:
+    - implements the Ornstein-Uhlenbeck process in order to help exploration
+    - hyperparameters used are the default already present in the pendulum. Namely:
+      - `mu = 0`
+      - `theta = 0.15`
+      - `sigma = 0.2`
+    - changed only to adapt the code the multiple agents environment
     
 - the `ReplayBuffer` class: an API to 
     - initialize storage
@@ -116,29 +147,26 @@ The `model.py` file contains:
 
 # Results
 
-The `DQN` implementation was able to successfully solve the task of achieving an average score of +13 over 100 episodes in 445 episodes. Its average score was 13.01, as shown in the `Figure 02` bellow. It's important to note that we used a early stopping technique not to go into the 5000 episodes, if not needed. The plot of the scores is shown in `Figure 03` and it suggests that just increasing the number of episodes alone could improve performance.
+The `DDPG` implementation was able to successfully solve the task of achieving an average score of +30 over 100 episodes in 144 episodes. Its average score was 30.01, as shown in the `Figure 03` bellow. It's important to note that we used a early stopping technique not to go into the 2000 episodes, if not needed. The plot of the scores is shown in `Figure 04.
 
-<!-- ![Learning evolution](imgs/results_1.png) -->
+![Learning evolution](imgs/results_1.png)
 
 
-<!-- ![Learning evolution plot](imgs/results_2.png) -->
+![Learning evolution plot](imgs/results_2.png)
 
-After seeing the plot shown in `Figure 03` I've tried to improve the agent's performance by just removing the early stopping if-clause and letting the DQN to train the entire 3000 episodes. The results are shown in the `Figure 04` and from it we can see that increasing the number of episodes can only get us so far (because the average score stagnates after about 1000 episodes) and to make the agent learn better we have to try different strategies, as suggest in the section Ideas to Explore Later.
 
-<!-- ![Learning evolution plot without early stopping](imgs/results_3.png) -->
 \pagebreak
 
 # Ideas to Explore Later
 
 Some ideas that could lead to improvements in the learning process are trying to:
 
-- Use Double Q-Learning, as presented [here](https://arxiv.org/pdf/1509.06461). The idea is very similar the the DQN, but the Q-learning algorithm is known to overestimate action values under certain conditions and so double Q-learning could lead to better performance.
+- as suggested in the benchmark subsection of the continuous control project section, something to try latter is to implement the TRPO, TNPG and also PPO algorithms, they may yield better results
 
-- Change the neural network architecture. Maybe add a convolutional layer or some dropout and see how things go.
+- In the actor-critic subsection some other algorithms are shown: A2C,A3C,GAE.
 
-- Try using [prioritized experience replay](https://arxiv.org/pdf/1511.05952) to replay important transitions more frequently, and therefore learn more efficiently.
+- i would really like to try [D4PG](https://openreview.net/pdf?id=SyZipzbCb)!
 
-- Try Dueling DQN, as presented [here](https://arxiv.org/pdf/1511.06581). The idea is to introduce the advantage function as a separate estimator. The main benefit it provides is to generalize learning across actions without imposing any change to the underlying reinforcement learning algorithm. The results displayed in the paper shows that this architecture could lead to better policy evaluation in the presence of many similar-valued actions
-    
-    
-    
+- also besides trying very hard I found that solving the environment with just one actor was harder than with two. I'd like to try implementing the start_learn function in the single environment to see it works as well as in the second one.
+
+- also the Ornstein-Uhlenbeck process to introduce noise in the parameters was an intersting idead. I'd like to explore more processes to see how they can change the agent learning, when everything else is "fixed".

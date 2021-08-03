@@ -221,9 +221,8 @@ action spaces. The \texttt{DDPG} is depicted in Figure 02.
 
 \pagebreak
 
-\hypertarget{coding-the-algorithm-need-to-update}{%
-\section{Coding the Algorithm {[}NEED TO
-UPDATE{]}}\label{coding-the-algorithm-need-to-update}}
+\hypertarget{coding-the-algorithm}{%
+\section{Coding the Algorithm}\label{coding-the-algorithm}}
 
 The code implementation of the algorithm used here is mostly inspired
 the by ``Pendulum'' project notebook provided by \texttt{Udacity}, in
@@ -237,35 +236,51 @@ the ``Policy-Based'' section. Here is a brief description of the files:
   \texttt{model\_py}; 3) loading the \texttt{dqn\_agent} implementation
   with fixed q-targets and experience replay.
 \item
-  \textbf{model.py}: this is where the neural network architecture is
-  stored, written in \texttt{pytorch}.
+  \textbf{model\_second\_env.py}: this is where the neural network
+  architectures are stored, written in \texttt{pytorch}.
 \item
-  \textbf{dqn\_agent.py}: this is code that implements the \texttt{DQN}
-  high-level ideas of fixed q-targets and experience replay.
+  \textbf{ddpg\_agent\_second\_env.py}: this is code that implements the
+  \texttt{DDPG} high-level ideas of fixed q-targets, experience replay
+  and Ornstein-Uhlenbeck noise.
 \item
-  \textbf{checkpoint.pth}: this is the \texttt{DQN} model weights used
-  to solve the environment \textbf{with} early stopping (which means
-  that if achieve the average score of +13 over 100 episodes than we
-  finish learning).
+  \textbf{checkpoint\_actor\_second\_env.pth}: this is the \texttt{DDPG}
+  actor model weights used to solve the environment.
 \item
-  \textbf{checkpoint\_no\_callback.pth}: this is the \texttt{DQN} model
-  weights used to solve the environment \textbf{without} early stopping
-  (which means that even if achieve the average score of +13 over 100
-  episodes, we still continue learning until we hit the total number of
-  episodes specified).
+  \textbf{checkpoint\_critic\_second\_env.pth}: this is the
+  \texttt{DDPG} critic model weights used to solve the environment.
 \end{itemize}
 
-\hypertarget{comments-on-model.py}{%
+\hypertarget{comments-on-model_second_env.py}{%
 \subsection{\texorpdfstring{Comments on
-\texttt{model.py}}{Comments on model.py}}\label{comments-on-model.py}}
+\texttt{model\_second\_env.py}}{Comments on model\_second\_env.py}}\label{comments-on-model_second_env.py}}
 
-The \texttt{model.py} file contains the \texttt{pytorch} model
-architecture used to solve the environment. The architecture used is a
-simple 2 fully connected layer with RELU activation function. The input
-size that the network expects is the 37 dimension array corresponding to
-the state space size, while the output layer is a simple linear layer
-with output size of 4 which corresponds to the 4 actions available
-(forward,backward,left,right).
+The \texttt{model\_second\_env.py} file contains the \texttt{pytorch}
+model architecture used to solve the environment. The input size that
+the network expects is the 33 variables corresponding to position,
+rotation, velocity, and angular velocities of the arm, while the output
+layer is a simple linear layer with output size of 4 corresponding to
+torque applicable to two joints.
+
+The \textbf{Actor Neural Networks} use the following architecture.
+
+\begin{verbatim}
+Input nodes (33) 
+  -> Fully Connected Layer (128 nodes, Relu activation) 
+    -> Batch Normlization
+      -> Fully Connected Layer (128 nodes, Relu activation) 
+         -> Ouput nodes (4 nodes, tanh activation)
+\end{verbatim}
+
+The \textbf{Critic Neural Networks} use the following architecture :
+
+\begin{verbatim}
+Input nodes (33) 
+  -> Fully Connected Layer (128 nodes, Relu activation) 
+    -> Batch Normlization
+      -> Include Actions at the second fully connected layer
+        -> Fully Connected Layer (128+4 nodes, Relu activation) 
+          -> Ouput node (1 node, no activation)
+\end{verbatim}
 
 The \texttt{hyperparameters} used are:
 
@@ -273,18 +288,19 @@ The \texttt{hyperparameters} used are:
 \tightlist
 \item
   the number of units in both first and second fully connected layer are
-  64.
+  128.
 \item
-  the learning rate parameter used in the \texttt{adam} optimizer is
-  \texttt{LR\ =\ 5e-4} (this actually belongs to the \texttt{model.py}
+  the learning rate parameter used in the \texttt{adam} optimizer for
+  both actor and critic are \texttt{LR\_ACTOR\ =\ LR\_CRITIC\ =\ 1e-4}
+  (this actually belongs to the \texttt{ddpg\_agent\_second\_env.py}
   file, but it's also part of the neural network architecture)
 \end{itemize}
 
-\hypertarget{comments-on-dqn_agent.py}{%
+\hypertarget{comments-on-ddpg_agent_second_env.py}{%
 \subsection{\texorpdfstring{Comments on
-\texttt{dqn\_agent.py}}{Comments on dqn\_agent.py}}\label{comments-on-dqn_agent.py}}
+\texttt{ddpg\_agent\_second\_env.py}}{Comments on ddpg\_agent\_second\_env.py}}\label{comments-on-ddpg_agent_second_env.py}}
 
-The \texttt{model.py} file contains:
+The \texttt{ddpg\_agent\_second\_env.py} file contains:
 
 \begin{itemize}
 \tightlist
@@ -294,7 +310,7 @@ The \texttt{model.py} file contains:
   \begin{itemize}
   \tightlist
   \item
-    \texttt{BATCH\_SIZE\ =\ 64}: neural network mini-batch size
+    \texttt{BATCH\_SIZE\ =\ 128}: neural network mini-batch size
   \item
     \texttt{GAMMA\ =\ 0.99}: the discount factor used in the discounted
     sum of rewards
@@ -302,12 +318,15 @@ The \texttt{model.py} file contains:
     \texttt{TAU\ =\ 1e-3}: the \(\tau\) parameter used to soft update of
     target parameters
   \item
-    \texttt{LR\ =\ 5e-4}: the neural network learning rate use in
-    gradient descent
+    \texttt{LR\_ACTOR\ =\ 1e-4}: the actor neural network learning rate
+    use in gradient descent
   \item
-    \texttt{UPDATE\_EVERY\ =\ 4}: how often to update the network
+    \texttt{LR\_CRITIC\ =\ 1e-4}: the critic neural network learning
+    rate use in gradient descent
   \item
-    \texttt{BUFFER\_SIZE\ =\ 1e5}: replay buffer size (how much we store
+    \texttt{WEIGHT\_DECAY\ =\ 0.0}: L2 weight decay
+  \item
+    \texttt{BUFFER\_SIZE\ =\ 1e6}: replay buffer size (how much we store
     into the replay buffer)
   \end{itemize}
 \item
@@ -317,12 +336,38 @@ The \texttt{model.py} file contains:
   \tightlist
   \item
     implements the \texttt{step}, \texttt{act}, \texttt{learn} and
-    \texttt{soft\_updates} methods
+    \texttt{soft\_updates} methods. Also has the \texttt{start\_learn}
+    to implement the idea to learn just after some episodes in order to
+    help stabilize training (as suggested in the benchmark section)
   \item
     initializes the policy and target networks for fixed q-target
-    strategy
+    strategy for both actor and critic networks.
   \item
     initializes the \texttt{ReplayBuffer} class.
+  \end{itemize}
+\item
+  the \texttt{OUNoise} class:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    implements the Ornstein-Uhlenbeck process in order to help
+    exploration
+  \item
+    hyperparameters used are the default already present in the
+    pendulum. Namely:
+
+    \begin{itemize}
+    \tightlist
+    \item
+      \texttt{mu\ =\ 0}
+    \item
+      \texttt{theta\ =\ 0.15}
+    \item
+      \texttt{sigma\ =\ 0.2}
+    \end{itemize}
+  \item
+    changed only to adapt the code the multiple agents environment
   \end{itemize}
 \item
   the \texttt{ReplayBuffer} class: an API to
@@ -342,22 +387,24 @@ The \texttt{model.py} file contains:
 \hypertarget{results}{%
 \section{Results}\label{results}}
 
-The \texttt{DQN} implementation was able to successfully solve the task
-of achieving an average score of +13 over 100 episodes in 445 episodes.
-Its average score was 13.01, as shown in the \texttt{Figure\ 02} bellow.
+The \texttt{DDPG} implementation was able to successfully solve the task
+of achieving an average score of +30 over 100 episodes in 144 episodes.
+Its average score was 30.01, as shown in the \texttt{Figure\ 03} bellow.
 It's important to note that we used a early stopping technique not to go
-into the 5000 episodes, if not needed. The plot of the scores is shown
-in \texttt{Figure\ 03} and it suggests that just increasing the number
-of episodes alone could improve performance.
+into the 2000 episodes, if not needed. The plot of the scores is shown
+in `Figure 04.
 
-After seeing the plot shown in \texttt{Figure\ 03} I've tried to improve
-the agent's performance by just removing the early stopping if-clause
-and letting the DQN to train the entire 3000 episodes. The results are
-shown in the \texttt{Figure\ 04} and from it we can see that increasing
-the number of episodes can only get us so far (because the average score
-stagnates after about 1000 episodes) and to make the agent learn better
-we have to try different strategies, as suggest in the section Ideas to
-Explore Later.
+\begin{figure}
+\centering
+\includegraphics{imgs/results_1.png}
+\caption{Learning evolution}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics{imgs/results_2.png}
+\caption{Learning evolution plot}
+\end{figure}
 
 \pagebreak
 
@@ -369,27 +416,25 @@ trying to:
 
 \begin{itemize}
 \item
-  Use Double Q-Learning, as presented
-  \href{https://arxiv.org/pdf/1509.06461}{here}. The idea is very
-  similar the the DQN, but the Q-learning algorithm is known to
-  overestimate action values under certain conditions and so double
-  Q-learning could lead to better performance.
+  as suggested in the benchmark subsection of the continuous control
+  project section, something to try latter is to implement the TRPO,
+  TNPG and also PPO algorithms, they may yield better results
 \item
-  Change the neural network architecture. Maybe add a convolutional
-  layer or some dropout and see how things go.
+  In the actor-critic subsection some other algorithms are shown:
+  A2C,A3C,GAE.
 \item
-  Try using \href{https://arxiv.org/pdf/1511.05952}{prioritized
-  experience replay} to replay important transitions more frequently,
-  and therefore learn more efficiently.
+  i would really like to try
+  \href{https://openreview.net/pdf?id=SyZipzbCb}{D4PG}!
 \item
-  Try Dueling DQN, as presented
-  \href{https://arxiv.org/pdf/1511.06581}{here}. The idea is to
-  introduce the advantage function as a separate estimator. The main
-  benefit it provides is to generalize learning across actions without
-  imposing any change to the underlying reinforcement learning
-  algorithm. The results displayed in the paper shows that this
-  architecture could lead to better policy evaluation in the presence of
-  many similar-valued actions
+  also besides trying very hard I found that solving the environment
+  with just one actor was harder than with two. I'd like to try
+  implementing the start\_learn function in the single environment to
+  see it works as well as in the second one.
+\item
+  also the Ornstein-Uhlenbeck process to introduce noise in the
+  parameters was an intersting idead. I'd like to explore more processes
+  to see how they can change the agent learning, when everything else is
+  ``fixed''.
 \end{itemize}
 
 \end{document}
